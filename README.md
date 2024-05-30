@@ -1,1 +1,1 @@
-program that just creates a popup reminder every 20 minutes to remind you to take a break. apparently 20 second breaks every 20 minutes is good for your eyes? ... and just general breaks to calm down and reduce stress and all that is probably good for workflow. 
+program that just creates a popup reminder every 20 minutes to remind you to take a break. 
