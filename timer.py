@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 import time
 
-TIMER_LENGTH = 20; 
+TIMER_LENGTH = 20 * 60; 
 DEFAULT_BREAK_MESSAGE = "take a small break for eyes at aleast. maybe a longer break if been working for a bit or stressed"
 
 def setTimer():
