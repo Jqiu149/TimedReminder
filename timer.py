@@ -3,11 +3,11 @@ from tkinter import ttk
 import threading
 
 def setTimer():
-    my_timer = threading.Timer(1200, BreakPopUp)
+    my_timer = threading.Timer(1200, CreatePopUpReminder)
     my_timer.start()
 
 
-def BreakPopUp():
+def CreatePopUpReminder():
     root = Tk()
     frm = ttk.Frame(root, padding=10)
     frm.grid()
