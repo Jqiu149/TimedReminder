@@ -17,6 +17,6 @@ def CreatePopUpReminder():
     root.mainloop()
 
 
-my_timer = threading.Timer(1200, BreakPopUp)
+my_timer = threading.Timer(1200, CreatePopUpReminder)
 my_timer.start()
 
