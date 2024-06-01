@@ -3,7 +3,13 @@ from tkinter import ttk
 import time
 
 TIMER_LENGTH = 20 * 60; 
-DEFAULT_BREAK_MESSAGE = "take a small break for eyes at aleast. maybe a longer break if been working for a bit or stressed"
+DEFAULT_BREAK_MESSAGE = "20 sec break for eyes. rah >:( .... or longer break if tired/stress."
+break_message = DEFAULT_BREAK_MESSAGE; 
+
+def setMessage(message):
+    if(message != ""):
+        global break_message
+        break_message = message
 
 def setTimer():
     time.sleep(TIMER_LENGTH)
@@ -11,14 +17,23 @@ def setTimer():
 
 
 def CreatePopUpReminder():
-    root = Tk()
-    frm = ttk.Frame(root, padding=10)
-    frm.grid()
-    ttk.Label(frm, text = DEFAULT_BREAK_MESSAGE).grid(column=0, row=0)
-    ttk.Button(frm, text="Quit", command=root.destroy).grid(column=1, row=0)
-    ttk.Button(frm, text="again",command=lambda:[root.destroy(),setTimer()]).grid(column=2, row=0)    
-    root.mainloop()
+    global break_message 
 
+    root = Tk()
+    frame = ttk.Frame(root, padding=10)
+    frame.grid()
+    
+    ttk.Label(frame, text = break_message).grid(column =0, row = 0)
+    
+    ttk.Label(frame, text = "enter a custom message for next time if you want").grid(column = 0, row = 1)
+    
+    entryBox = ttk.Entry(frame)
+    entryBox.grid(column = 1, row = 1)
+
+    ttk.Button(frame, text="again",command=lambda:[setMessage(entryBox.get()), root.destroy(),setTimer()]).grid(column=3, row=1)    
+    #hey REMMEBER TH EORDER OF THE FUCNTIONS PASSED IN HERE MATTER
+
+    root.mainloop()
 
 setTimer(); 
 
