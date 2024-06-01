@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 import time
 
-TIMER_LENGTH = 20 * 60; 
+TIMER_LENGTH = 20 * 60; # in seconds 
 DEFAULT_BREAK_MESSAGE = "20 sec break for eyes. rah >:( .... or longer break if tired/stress."
 break_message = DEFAULT_BREAK_MESSAGE; 
 
@@ -24,7 +24,8 @@ def CreatePopUpReminder():
     frame.grid()
     
     ttk.Label(frame, text = break_message).grid(column =0, row = 0)
-    
+    break_message = DEFAULT_BREAK_MESSAGE
+
     ttk.Label(frame, text = "enter a custom message for next time if you want").grid(column = 0, row = 1)
     
     entryBox = ttk.Entry(frame)
