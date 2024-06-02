@@ -1,10 +1,23 @@
 from tkinter import *
 from tkinter import ttk
 import time
+import random
+
 
 TIMER_LENGTH = 20 * 60; # in seconds 
 DEFAULT_BREAK_MESSAGE = "20 sec break for eyes. rah >:( .... or longer break if tired/stress."
 break_message = DEFAULT_BREAK_MESSAGE; 
+
+messages = [
+    "you're doing great >~<",
+    "slaying !!!!!", 
+    "ineedadrinkimsocringeholyshitwtfisthisidkman", 
+    "\"postive message\"",
+    "I apreciate you a lot honey ;---;",
+    "thank you for trying your best !!!",
+    "尽管你一再让我心碎，我想告诉你，如果有来生，我还是会选择和你一起，报税，开洗衣店",
+
+]
 
 def setMessage(message):
     if(message != ""):
@@ -33,6 +46,9 @@ def CreatePopUpReminder():
 
     ttk.Button(frame, text="again",command=lambda:[setMessage(entryBox.get()), root.destroy(),setTimer()]).grid(column=3, row=1)    
     #hey REMMEBER TH EORDER OF THE FUCNTIONS PASSED IN HERE MATTER
+
+    if(random.randint(0,20) == 7):
+        ttk.Label(frame, text = random.choice(messages)).grid(column =0, row = 4)
 
     root.mainloop()
 
