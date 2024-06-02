@@ -4,7 +4,7 @@ import time
 import random
 
 
-TIMER_LENGTH = 1; # in seconds 
+TIMER_LENGTH = 20*60; # in seconds 
 DEFAULT_BREAK_MESSAGE = "20 sec break for eyes. rah >:( .... or longer break if tired/stress."
 break_message = DEFAULT_BREAK_MESSAGE; 
 
