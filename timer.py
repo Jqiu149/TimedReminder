@@ -3,7 +3,6 @@ from tkinter import ttk
 import time
 import random
 
-
 TIMER_LENGTH = 20*60; # in seconds 
 DEFAULT_BREAK_MESSAGE = "20 sec break for eyes. rah >:( .... or longer break if tired/stress."
 break_message = DEFAULT_BREAK_MESSAGE; 
@@ -34,7 +33,9 @@ def setTimer():
 def CreatePopUpReminder():
     global break_message 
 
-    root = Tk()
+    root = Tk() #initializes tcl/tk interpreter thingy? is the gui interface
+                #also creates root window? 
+                    
     frame = ttk.Frame(root, padding=10)
     frame.grid()
     
@@ -47,6 +48,9 @@ def CreatePopUpReminder():
     entryBox.grid(column = 1, row = 1)
 
     ttk.Button(frame, text="again",command=lambda:[setMessage(entryBox.get()), root.destroy(),setTimer()]).grid(column=3, row=1)    
+    #hey REMMEBER TH EORDER OF THE FUCNTIONS PASSED IN HERE MATTER
+
+    ttk.Button(frame, text="quit",command= lambda:[root.destroy()]).grid(column=4, row=1)    
     #hey REMMEBER TH EORDER OF THE FUCNTIONS PASSED IN HERE MATTER
 
     if(random.randint(0,20) == 7):
