@@ -35,7 +35,9 @@ def CreatePopUpReminder():
 
     root = Tk() #initializes tcl/tk interpreter thingy? is the gui interface
                 #also creates root window? 
-                    
+    
+    root.geometry()
+
     frame = ttk.Frame(root, padding=10)
     frame.grid()
     
@@ -51,12 +53,16 @@ def CreatePopUpReminder():
     #hey REMMEBER TH EORDER OF THE FUCNTIONS PASSED IN HERE MATTER
 
     ttk.Button(frame, text="quit",command= lambda:[root.destroy()]).grid(column=4, row=1)    
-    #hey REMMEBER TH EORDER OF THE FUCNTIONS PASSED IN HERE MATTER
 
     if(random.randint(0,20) == 7):
         ttk.Label(frame, text = random.choice(messages)).grid(column =0, row = 3, pady = (40, 0))
 
     root.mainloop()
+
+    xpos = root.winfo_screenwidth() // 2;
+    ypos = root.winfo_screenheight() // 2; 
+
+    root.geometry(f"+{xpos}+{ypos}")
 
 setTimer(); 
 
