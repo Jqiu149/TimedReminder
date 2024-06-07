@@ -7,7 +7,7 @@ import json
 from supabase import create_client, Client
 
 url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
+key: str = os.environ.get("SUPABASE_KEY") 
 supabase: Client = create_client(url, key)
 
 MAX_VAL_SINT_4BYTES = (2**30) - 1
