@@ -31,7 +31,7 @@ def storeData(startTime, endTime):
     # supabase.table('userData').insert({"userId": user_id, "time_elapsed_seconds": time_elapsed}).execute(); 
 
 def CreatePopUpReminder():
-    global break_message
+    global break_message 
     
     timer_start_time = time.time()
     root = Tk() #initializes tcl/tk interpreter thingy? is the gui interface
