@@ -22,13 +22,12 @@ def setTimer():
     CreatePopUpReminder()
 
 def storeData(startTime, endTime):
-    print("hey commented the data storing out for now, uncomment later")
-    # time_elapsed = int(endTime - startTime)
-    # user_id = user_settings["user_id"]; 
+    time_elapsed = int(endTime - startTime)
+    user_id = user_settings["user_id"]; 
 
-    # if(time_elapsed > MAX_VAL_SINT_4BYTES or time_elapsed < 0):
-    #     time_elapsed = None
-    # supabase.table('userData').insert({"userId": user_id, "time_elapsed_seconds": time_elapsed}).execute(); 
+    if(time_elapsed > MAX_VAL_SINT_4BYTES or time_elapsed < 0):
+        time_elapsed = None
+    supabase.table('userData').insert({"userId": user_id, "time_elapsed_seconds": time_elapsed}).execute(); 
 
 def CreatePopUpReminder():
     global break_message 
