@@ -37,7 +37,6 @@ def storeData(startTime, endTime):
     if(not has_internet()):
          return;
 
-    print("storing data")
     time_elapsed = int(endTime - startTime)
     user_id = user_settings["user_id"]; 
 
@@ -46,6 +45,7 @@ def storeData(startTime, endTime):
             time_elapsed = None
         supabase.table('user_data').insert({"user_id": user_id, "time_elapsed_seconds": time_elapsed}).execute(); 
     except Exception as e:
+        print(e)
         pass
 
 def CreatePopUpReminder():
