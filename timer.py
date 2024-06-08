@@ -90,7 +90,8 @@ key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
 #initialize user settings 
-user_settings_file = open('user_settings.json',"r")
+settings_path = os.path.dirname() / 'user_settings.json' 
+user_settings_file = open(settings_path,"r")
 user_settings = json.load(user_settings_file)
 user_settings_file.close()
 
