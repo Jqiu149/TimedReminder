@@ -90,7 +90,7 @@ key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
 #initialize user settings 
-settings_path = os.path.dirname() / 'user_settings.json' 
+settings_path = os.path.join( os.path.dirname(__file__), 'user_settings.json' )
 user_settings_file = open(settings_path,"r")
 user_settings = json.load(user_settings_file)
 user_settings_file.close()
@@ -98,8 +98,6 @@ user_settings_file.close()
 if(has_internet()):
     try:
         if(user_settings["user_id"] is None):
-            print("user_settings user_id is none")
-            print(user_settings)
             #attempt getting data from db first, so if it fails then we won't overwrite the file and stuff but not have smth to put in. 
             new_user_id = supabase.table("user_id").select("*").execute().data[0]["next_user_id"]
             user_settings["user_id"] = new_user_id
