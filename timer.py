@@ -8,7 +8,7 @@ from supabase import create_client, Client
 import threading
 import socket
 
-MAX_VAL_SINT_4BYTES = (2**30) - 1
+MAX_VAL_SIGNED_INT_2BYTES = (2**15) - 1
 
 #thank you internet person
 def has_internet(host="8.8.8.8", port=53, timeout=3):
@@ -41,8 +41,8 @@ def storeData(startTime, endTime):
     user_id = user_settings["user_id"]; 
 
     try:
-        if(time_elapsed > MAX_VAL_SINT_4BYTES or time_elapsed < 0):
-            time_elapsed = None
+        if(time_elapsed > MAX_VAL_SIGNED_INT_2BYTES):
+            time_elapsed =  MAX_VAL_SIGNED_INT_2BYTES
         supabase.table('user_data').insert({"user_id": user_id, "time_elapsed_seconds": time_elapsed}).execute(); 
     except Exception as e:
         print(e)
