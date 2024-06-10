@@ -1,13 +1,11 @@
-from tkinter import *
+from tkinter import Tk
 from tkinter import ttk
 import time
 import random
 import os
 import json
 from supabase import create_client, Client
-import threading
 import socket
-import threading.timer
 
 MAX_VAL_SIGNED_INT_2BYTES = (2**15) - 1
 
@@ -25,6 +23,10 @@ def has_internet(host="8.8.8.8", port=53, timeout=3):
     except :
         return False
 
+#recursively schedules the given tkinter window to be redrawn in time_to_redraw milliseconds. 
+def schedule_redraw_r(window, time_to_redraw):
+    window.after(time_to_redraw, lambda:[window.withdraw(), window.deiconify(), schedule_redraw_r(window, time_to_redraw)])
+
 # sets the next pop-up's break-message to input if it isn't empty
 def set_break_message(message):
     if(message != ""):
@@ -33,7 +35,7 @@ def set_break_message(message):
 
 # creates the pop-up after the chosen break time
 def setTimer():
-    time.sleep(user_settings["default_timer_length"])
+    time.sleep(user_settings["default_timer_length_sec"])
     CreatePopUpReminder()
 
 # precondition: the user is connected to the internet
@@ -45,17 +47,19 @@ def storeData(startTime, endTime):
     time_elapsed = int(endTime - startTime)
     user_id = user_settings["user_id"]; 
 
-    try:
-        if(time_elapsed > MAX_VAL_SIGNED_INT_2BYTES):
-            time_elapsed =  MAX_VAL_SIGNED_INT_2BYTES
-        supabase.table('user_data').insert({"user_id": user_id, "time_elapsed_seconds": time_elapsed}).execute(); 
-    except Exception as e:
-        print(e)
-        pass
+    print(time_elapsed)
+    # try:
+    #     if(time_elapsed > MAX_VAL_SIGNED_INT_2BYTES):
+    #         time_elapsed =  MAX_VAL_SIGNED_INT_2BYTES
+    #     supabase.table('user_data').insert({"user_id": user_id, "time_elapsed_seconds": time_elapsed}).execute(); 
+    # except Exception as e:
+    #     print(e)
+    #     pass
 
 #creates the actual pop-up
 def CreatePopUpReminder():
     global break_message 
+
     #store the time of creation of the timer
     timer_start_time = time.time()
 
@@ -65,10 +69,9 @@ def CreatePopUpReminder():
     xpos = root.winfo_screenwidth() // 2;
     ypos = root.winfo_screenheight() // 2; 
     root.geometry(f"+{xpos}+{ypos}")
+
     frame = ttk.Frame(root, padding=10)
     frame.grid()
-    
-
     #window contents
     
     #break message
@@ -91,12 +94,14 @@ def CreatePopUpReminder():
     if(random.randint(0,20) == 7):
         ttk.Label(frame, text = random.choice(user_settings["extra_messages"])).grid(column =0, row = 3, pady = (40, 0))
 
+    schedule_redraw_r(root, user_settings["default_redraw_time_ms"])
+
     root.mainloop()
 
 
 #create database connection client.
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY") 
+url: str = "https://wtzpvgzfdimeanwqofil.supabase.co"#os.environ.get("SUPABASE_URL")
+key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0enB2Z3pmZGltZWFud3FvZmlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTczNjQyNjUsImV4cCI6MjAzMjk0MDI2NX0.xjftldTnwLSoVKkKsBAdAmWJ5LKIex0_zJAOqPvMDE0"#os.environ.get("SUPABASE_KEY") 
 supabase: Client = create_client(url, key)
 
 #initialize user settings 
@@ -105,7 +110,7 @@ user_settings_file = open(settings_path,"r")
 user_settings = json.load(user_settings_file)
 user_settings_file.close()
 
-#requires internet connection
+#precondition: internet connection
 #get the next availible userID for the user if they don't have one yet. 
 if(has_internet()):
     try:
