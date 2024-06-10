@@ -81,11 +81,11 @@ def CreatePopUpReminder():
     entryBox.grid(column = 1, row = 1)
 
     # 'again' button to schedule next pop-up
-    ttk.Button(frame, text="again",command=lambda:[set_break_message(entryBox.get()), root.destroy(), storeData(timer_start_time, time.time()), setTimer()]).grid(column=3, row=1)    
+    ttk.Button(frame, text="set next reminder",command=lambda:[set_break_message(entryBox.get()), root.destroy(), storeData(timer_start_time, time.time()), setTimer()]).grid(column=3, row=1)    
                 #hey REMMEBER THE ORDER OF THE FUCNTIONS PASSED IN HERE MATTER
 
     #quit button, means we don't schedule another pop-up
-    ttk.Button(frame, text="quit",command= lambda:[root.destroy(), storeData(timer_start_time, time.time())]).grid(column=4, row=1)    
+    ttk.Button(frame, text="quit program",command= lambda:[root.destroy(), storeData(timer_start_time, time.time())]).grid(column=4, row=1)    
 
     #potentially adds an extra message (that i think is cute or funny but uh.... might be cringe .______. ) 
     if(random.randint(0,20) == 7):
