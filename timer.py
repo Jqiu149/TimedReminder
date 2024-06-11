@@ -47,14 +47,13 @@ def storeData(startTime, endTime):
     time_elapsed = int(endTime - startTime)
     user_id = user_settings["user_id"]; 
 
-    print(time_elapsed)
-    # try:
-    #     if(time_elapsed > MAX_VAL_SIGNED_INT_2BYTES):
-    #         time_elapsed =  MAX_VAL_SIGNED_INT_2BYTES
-    #     supabase.table('user_data').insert({"user_id": user_id, "time_elapsed_seconds": time_elapsed}).execute(); 
-    # except Exception as e:
-    #     print(e)
-    #     pass
+    try:
+        if(time_elapsed > MAX_VAL_SIGNED_INT_2BYTES):
+            time_elapsed =  MAX_VAL_SIGNED_INT_2BYTES
+        supabase.table('user_data').insert({"user_id": user_id, "time_elapsed_seconds": time_elapsed}).execute(); 
+    except Exception as e:
+        print(e)
+        pass
 
 #creates the actual pop-up
 def CreatePopUpReminder():
