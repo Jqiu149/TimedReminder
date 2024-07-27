@@ -1,3 +1,4 @@
+import tkinter
 from tkinter import Tk
 from tkinter import ttk
 import time
@@ -6,9 +7,13 @@ import os
 import json
 from supabase import create_client, Client
 import socket
+import sched 
+from functools import partial
 
 MAX_VAL_SIGNED_INT_2BYTES = (2**15) - 1
 
+scheduler = sched.scheduler()
+add_on_messages = []
 
 def has_internet(host="8.8.8.8", port=53, timeout=3):
     """
@@ -28,16 +33,10 @@ def schedule_redraw_r(window, time_to_redraw):
     window.after(time_to_redraw, lambda:[window.withdraw(), window.deiconify(), schedule_redraw_r(window, time_to_redraw)])
 
 # sets the next pop-up's break-message to input if it isn't empty
-def set_break_message(message):
-    if(message != ""):
-        global break_message
-        break_message = message
+def set_break_message(message_addon, reminder_num):
+    add_on_messages[reminder_num] = message_addon        
 
-# creates the pop-up after the chosen break time
-def setTimer():
-    time.sleep(user_settings["default_timer_length_sec"])
-    CreatePopUpReminder()
-
+#!!!
 # precondition: the user is connected to the internet
 # stores the duration the pop-up existed for, and the user's id in our DB 
 def storeData(startTime, endTime):
@@ -45,7 +44,7 @@ def storeData(startTime, endTime):
          return;
 
     time_elapsed = int(endTime - startTime)
-    user_id = user_settings["user_id"]; 
+    user_id = state["user_id"]; 
 
     try:
         if(time_elapsed > MAX_VAL_SIGNED_INT_2BYTES):
@@ -55,15 +54,14 @@ def storeData(startTime, endTime):
         print(e)
         pass
 
-#creates the actual pop-up
-def CreatePopUpReminder():
-    global break_message 
-
+#creates a popup for the given reminder.
+def CreatePopUpReminder(timer, timer_number):
     #store the time of creation of the timer
     timer_start_time = time.time()
 
     #creates the window + positions it 
     root = Tk() 
+    root.title(timer["timer_name"])
     root.geometry()
     xpos = root.winfo_screenwidth() // 2;
     ypos = root.winfo_screenheight() // 2; 
@@ -71,31 +69,80 @@ def CreatePopUpReminder():
 
     frame = ttk.Frame(root, padding=10)
     frame.grid()
+
     #window contents
     
     #break message
-    ttk.Label(frame, text = break_message).grid(column =0, row = 0)
-    break_message = user_settings["default_break_message"]
-
+    ttk.Label(frame, text = timer["timer_base_message"] ).grid(column =0, row = 0)
+    ttk.Label(frame, text = add_on_messages[timer_number]).grid(column =0, row = 1)
     # section to enter a custom message for the next pop-up. 
-    ttk.Label(frame, text = "enter a custom message for next popUp if you want").grid(column = 0, row = 1)
+    #!!!
+    ttk.Label(frame, text = "enter a custom message for next popUp if you want").grid(column = 0, row = 2)
     entryBox = ttk.Entry(frame)
-    entryBox.grid(column = 1, row = 1)
+    entryBox.grid(column = 1, row = 3)
 
     # 'again' button to schedule next pop-up
-    ttk.Button(frame, text="set next reminder",command=lambda:[set_break_message(entryBox.get()), root.destroy(), storeData(timer_start_time, time.time()), setTimer()]).grid(column=3, row=1)    
-                #hey REMMEBER THE ORDER OF THE FUCNTIONS PASSED IN HERE MATTER
+    ttk.Button(frame, text="set next reminder",command=lambda:[ set_break_message(entryBox.get(), timer_number), setTimer(timer, timer_number), root.destroy(), storeData(timer_start_time, time.time())]).grid(column=3, row=1)    
+        #hey REMMEBER THE ORDER OF THE FUCNTIONS PASSED IN HERE MATTER
 
     #quit button, means we don't schedule another pop-up
     ttk.Button(frame, text="quit program",command= lambda:[root.destroy(), storeData(timer_start_time, time.time())]).grid(column=4, row=1)    
 
     #potentially adds an extra message (that i think is cute or funny but uh.... might be cringe .______. ) 
     if(random.randint(0,20) == 7):
-        ttk.Label(frame, text = random.choice(user_settings["extra_messages"])).grid(column =0, row = 3, pady = (40, 0))
+        ttk.Label(frame, text = random.choice(state["extra_messages"])).grid(column =0, row = 3, pady = (40, 0))
 
-    schedule_redraw_r(root, user_settings["default_redraw_time_ms"])
+    schedule_redraw_r(root, 1000000)
 
     root.mainloop()
+
+
+def create_menu(timer_list):
+    #create root window 
+    window = Tk()
+
+    #list storing buttons corresponding to each reminder telling us whether to create the correspodning reminder 
+    timer_buttonState_list = []
+
+    alarm_section_frame = ttk.Frame(window)
+    alarm_section_frame.grid()
+    #for each alarm in settings list, create a frame for it ig. 
+        #display it's name/purpose, duration, whetehr or not it's currently in use / start button. 
+    for alarm_num, alarm in enumerate(timer_list):
+        timer_name = ttk.Label(alarm_section_frame, text=alarm["timer_name"])
+        timer_name.grid(row = alarm_num, column = 0, padx = (0,100) )
+
+        timer_duration = ttk.Label(alarm_section_frame, text=alarm["timer_duration_min"])
+        timer_duration.grid(row = alarm_num, column = 1, padx = 20)
+
+        state = tkinter.IntVar()
+        select_button = ttk.Checkbutton(alarm_section_frame, var = state)
+        select_button.grid(row = alarm_num, column = 2, padx = (20, 0))
+
+        timer_buttonState_list.append((state, alarm))
+
+    #create a 'plus button' thing that has behavior allow to add alarm to user settings. 
+    #!!!
+    frame = ttk.Frame(alarm_section_frame)
+    frame.grid(row = alarm_num+1, column = 0,columnspan = 3)
+    add_alarm_button = ttk.Button(frame, text = "add reminder")
+    add_alarm_button.grid()
+    #... maybe way use image instead. want + thingy. 
+
+    start_timers_button = ttk.Button(window, text = "start timers", command=lambda:[start_selected_timers(timer_buttonState_list), window.destroy(),scheduler.run()])
+    start_timers_button.grid()
+
+    window.mainloop()
+
+def start_selected_timers(timer_buttonState_list):
+    for timer_buttonState_pair in timer_buttonState_list:
+        if(timer_buttonState_pair[0].get() == 1):
+            setTimer(timer_buttonState_pair[1], len(add_on_messages))
+            add_on_messages.append("")
+        
+#adds the timer to the scheduler queue 
+def setTimer(timer, timer_number):
+    scheduler.enter(timer["timer_duration_min"] * 60, 1, CreatePopUpReminder, argument=(timer,timer_number))
 
 
 #create database connection client.
@@ -103,34 +150,32 @@ url: str = "https://wtzpvgzfdimeanwqofil.supabase.co"#os.environ.get("SUPABASE_U
 key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0enB2Z3pmZGltZWFud3FvZmlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTczNjQyNjUsImV4cCI6MjAzMjk0MDI2NX0.xjftldTnwLSoVKkKsBAdAmWJ5LKIex0_zJAOqPvMDE0"#os.environ.get("SUPABASE_KEY") 
 supabase: Client = create_client(url, key)
 
-#initialize user settings 
+#initialize program state using user_settings
 settings_path = os.path.join( os.path.dirname(__file__), 'user_settings.json' )
 user_settings_file = open(settings_path,"r")
-user_settings = json.load(user_settings_file)
+state = json.load(user_settings_file)
 user_settings_file.close()
+
 
 #precondition: internet connection
 #get the next availible userID for the user if they don't have one yet. 
 if(has_internet()):
     try:
-        if(user_settings["user_id"] is None):
+        if(state["user_id"] is None):
 
             #(we attempt getting data from db first, so if it fails then we won't overwrite the file and stuff but not have smth to put in. )
 
             #try to get next availible id from our database and update the database. 
             new_user_id = supabase.table("user_id").select("*").execute().data[0]["next_user_id"]
-            user_settings["user_id"] = new_user_id
-            supabase.table("user_id").update({'next_user_id': user_settings["user_id"] + 1}).eq('next_user_id', user_settings["user_id"] ).execute()
+            state["user_id"] = new_user_id
+            supabase.table("user_id").update({'next_user_id': state["user_id"] + 1}).eq('next_user_id', state["user_id"] ).execute()
             
             #store in local userdata
-            user_settings_file = open('user_settings.json',"w")
-            json.dump(user_settings, user_settings_file) 
+            user_settings_file = open('state.json',"w")
+            json.dump(state, user_settings_file) 
             user_settings_file.close()
     except Exception as e:
         print(e)
         pass
 
-#start timer for our first popUP. 
-break_message = user_settings["default_break_message"]
-setTimer(); 
-
+create_menu(state["reminder_list"])
