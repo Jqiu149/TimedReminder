@@ -32,11 +32,11 @@ def has_internet(host="8.8.8.8", port=53, timeout=3):
 def schedule_redraw_r(window, time_to_redraw):
     window.after(time_to_redraw, lambda:[window.withdraw(), window.deiconify(), schedule_redraw_r(window, time_to_redraw)])
 
-# sets the next pop-up's break-message to input if it isn't empty
+# sets the next pop-up's break-message to input. "" if empty
 def set_break_message(message_addon, reminder_num):
     add_on_messages[reminder_num] = message_addon        
 
-#!!!
+
 # precondition: the user is connected to the internet
 # stores the duration the pop-up existed for, and the user's id in our DB 
 def storeData(startTime, endTime):
@@ -62,10 +62,9 @@ def CreatePopUpReminder(timer, timer_number):
     #creates the window + positions it 
     root = Tk() 
     root.title(timer["timer_name"])
-    root.geometry()
-    xpos = root.winfo_screenwidth() // 2;
-    ypos = root.winfo_screenheight() // 2; 
-    root.geometry(f"+{xpos}+{ypos}")
+#!!!!
+    # height = random.randint(root.winfo_height(), root.winfo_screenheight())
+    # width = random.randint(root.winfo_width(), root.winfo_screenwidth()) 
 
     frame = ttk.Frame(root, padding=10)
     frame.grid()
@@ -73,29 +72,51 @@ def CreatePopUpReminder(timer, timer_number):
     #window contents
     
     #break message
-    ttk.Label(frame, text = timer["timer_base_message"] ).grid(column =0, row = 0)
-    ttk.Label(frame, text = add_on_messages[timer_number]).grid(column =0, row = 1)
+    for currentRow, message in enumerate(timer["timer_base_messages"]):
+        ttk.Label(frame, text = message).grid(column =0, row = currentRow)
+    
+    currentRow+=1
+
+
+    if add_on_messages[timer_number] != "":
+        ttk.Label(frame, text = add_on_messages[timer_number]).grid(column =0, row = currentRow, pady = (20,20))
+        currentRow+=1
+ 
+
     # section to enter a custom message for the next pop-up. 
-    #!!!
-    ttk.Label(frame, text = "enter a custom message for next popUp if you want").grid(column = 0, row = 2)
+    ttk.Label(frame, text = "enter a custom message for next popUp if you want").grid(column = 0, row = currentRow)
     entryBox = ttk.Entry(frame)
-    entryBox.grid(column = 1, row = 3)
+    entryBox.grid(column = 1, row = currentRow)
 
     # 'again' button to schedule next pop-up
-    ttk.Button(frame, text="set next reminder",command=lambda:[ set_break_message(entryBox.get(), timer_number), setTimer(timer, timer_number), root.destroy(), storeData(timer_start_time, time.time())]).grid(column=3, row=1)    
+    ttk.Button(
+        frame, 
+        text="set next reminder",
+        command=lambda:[ set_break_message(entryBox.get(), timer_number),
+            setTimer(timer, timer_number),
+            root.destroy(),
+            storeData(timer_start_time, time.time())]
+        ).grid(column=3, row=currentRow)    
+
         #hey REMMEBER THE ORDER OF THE FUCNTIONS PASSED IN HERE MATTER
 
     #quit button, means we don't schedule another pop-up
-    ttk.Button(frame, text="quit program",command= lambda:[root.destroy(), storeData(timer_start_time, time.time())]).grid(column=4, row=1)    
+    ttk.Button(frame, 
+        text="quit program",
+        command= lambda:[
+            root.destroy(), 
+            storeData(timer_start_time, time.time())]
+        ).grid(column=4, row=currentRow)    
+
+    currentRow+= 1
 
     #potentially adds an extra message (that i think is cute or funny but uh.... might be cringe .______. ) 
     if(random.randint(0,20) == 7):
-        ttk.Label(frame, text = random.choice(state["extra_messages"])).grid(column =0, row = 3, pady = (40, 0))
+        ttk.Label(frame, text = random.choice(state["extra_messages"])).grid(column =0, row = currentRow, pady = (40, 0))
 
     schedule_redraw_r(root, 1000000)
 
     root.mainloop()
-
 
 def create_menu(timer_list):
     #create root window 
@@ -127,6 +148,9 @@ def create_menu(timer_list):
     frame.grid(row = alarm_num+1, column = 0,columnspan = 3)
     add_alarm_button = ttk.Button(frame, text = "add reminder")
     add_alarm_button.grid()
+
+    add_alarm_button['command']  = lambda b = add_alarm_button: b.grid_forget()
+
     #... maybe way use image instead. want + thingy. 
 
     start_timers_button = ttk.Button(window, text = "start timers", command=lambda:[start_selected_timers(timer_buttonState_list), window.destroy(),scheduler.run()])
@@ -142,7 +166,7 @@ def start_selected_timers(timer_buttonState_list):
         
 #adds the timer to the scheduler queue 
 def setTimer(timer, timer_number):
-    scheduler.enter(timer["timer_duration_min"] * 60, 1, CreatePopUpReminder, argument=(timer,timer_number))
+    scheduler.enter(timer["timer_duration_min"], 1, CreatePopUpReminder, argument=(timer,timer_number))
 
 
 #create database connection client.
