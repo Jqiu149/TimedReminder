@@ -62,9 +62,7 @@ def CreatePopUpReminder(timer, timer_number):
     #creates the window + positions it 
     root = Tk() 
     root.title(timer["timer_name"])
-#!!!!
-    # height = random.randint(root.winfo_height(), root.winfo_screenheight())
-    # width = random.randint(root.winfo_width(), root.winfo_screenwidth()) 
+
 
     frame = ttk.Frame(root, padding=10)
     frame.grid()
@@ -81,7 +79,6 @@ def CreatePopUpReminder(timer, timer_number):
     if add_on_messages[timer_number] != "":
         ttk.Label(frame, text = add_on_messages[timer_number]).grid(column =0, row = currentRow, pady = (20,20))
         currentRow+=1
- 
 
     # section to enter a custom message for the next pop-up. 
     ttk.Label(frame, text = "enter a custom message for next popUp if you want").grid(column = 0, row = currentRow)
@@ -166,11 +163,11 @@ def start_selected_timers(timer_buttonState_list):
         
 #adds the timer to the scheduler queue 
 def setTimer(timer, timer_number):
-    scheduler.enter(timer["timer_duration_min"], 1, CreatePopUpReminder, argument=(timer,timer_number))
+    scheduler.enter(timer["timer_duration_min"] * 60, 1, CreatePopUpReminder, argument=(timer,timer_number))
 
 
 #create database connection client.
-url: str = "https://wtzpvgzfdimeanwqofil.supabase.co"#os.environ.get("SUPABASE_URL")
+url: str = "https://wtzpvgzfdimeanwqofil.supabase.co" #os.environ.get("SUPABASE_URL")
 key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0enB2Z3pmZGltZWFud3FvZmlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTczNjQyNjUsImV4cCI6MjAzMjk0MDI2NX0.xjftldTnwLSoVKkKsBAdAmWJ5LKIex0_zJAOqPvMDE0"#os.environ.get("SUPABASE_KEY") 
 supabase: Client = create_client(url, key)
 

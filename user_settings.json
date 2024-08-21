@@ -13,7 +13,9 @@
         },
         {
             "timer_name": "sessionBreak", 
-            "timer_base_message": "it's been an hour, stahp. take long break... if not progressing need stop and move on for a bit... come back later",
+            "timer_base_messages": [
+                "it's been an hour, stahp. take long break, come back later"
+            ],
             "timer_duration_min": 60,
             "on": false
         }
