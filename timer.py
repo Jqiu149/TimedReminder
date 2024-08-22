@@ -167,8 +167,8 @@ def setTimer(timer, timer_number):
 
 
 #create database connection client.
-url: str = "https://wtzpvgzfdimeanwqofil.supabase.co" #os.environ.get("SUPABASE_URL")
-key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0enB2Z3pmZGltZWFud3FvZmlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTczNjQyNjUsImV4cCI6MjAzMjk0MDI2NX0.xjftldTnwLSoVKkKsBAdAmWJ5LKIex0_zJAOqPvMDE0"#os.environ.get("SUPABASE_KEY") 
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY") 
 supabase: Client = create_client(url, key)
 
 #initialize program state using user_settings
