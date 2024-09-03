@@ -11,9 +11,12 @@ import sched
 from functools import partial
 
 MAX_VAL_SIGNED_INT_2BYTES = (2**15) - 1
+SMALL_PADDING = 10
+MEDIUM_PADDING = 20
 
 scheduler = sched.scheduler()
 add_on_messages = []
+num_popup_since_break = []
 
 def has_internet(host="8.8.8.8", port=53, timeout=3):
     """
@@ -36,23 +39,25 @@ def schedule_redraw_r(window, time_to_redraw):
 def set_break_message(message_addon, reminder_num):
     add_on_messages[reminder_num] = message_addon        
 
-
 # precondition: the user is connected to the internet
 # stores the duration the pop-up existed for, and the user's id in our DB 
-def storeData(startTime, endTime):
+def storeData(time_elapsed, timer_name, user_id):
     if(not has_internet()):
          return;
-
-    time_elapsed = int(endTime - startTime)
-    user_id = state["user_id"]; 
 
     try:
         if(time_elapsed > MAX_VAL_SIGNED_INT_2BYTES):
             time_elapsed =  MAX_VAL_SIGNED_INT_2BYTES
-        supabase.table('user_data').insert({"user_id": user_id, "time_elapsed_seconds": time_elapsed}).execute(); 
+        supabase.table('user_data').insert({"user_id": user_id, "timer_name": timer_name, "time_elapsed_seconds": time_elapsed}).execute(); 
     except Exception as e:
         print(e)
         pass
+
+def incrementNumBreakCounter(timer_number):
+    num_popup_since_break[timer_number] += 1
+
+def resetNumTimersSinceBreakCount(timer_number):
+    num_popup_since_break[timer_number] = 0
 
 #creates a popup for the given reminder.
 def CreatePopUpReminder(timer, timer_number):
@@ -77,11 +82,11 @@ def CreatePopUpReminder(timer, timer_number):
 
 
     if add_on_messages[timer_number] != "":
-        ttk.Label(frame, text = add_on_messages[timer_number]).grid(column =0, row = currentRow, pady = (20,20))
+        ttk.Label(frame, text = add_on_messages[timer_number]).grid(column =0, row = currentRow, pady = (MEDIUM_PADDING,MEDIUM_PADDING))
         currentRow+=1
 
     # section to enter a custom message for the next pop-up. 
-    ttk.Label(frame, text = "enter a custom message for next popUp if you want").grid(column = 0, row = currentRow)
+    ttk.Label(frame, text = "enter a custom message for next popUp if you want").grid(column = 0, row = currentRow, pady =(SMALL_PADDING,0))
     entryBox = ttk.Entry(frame)
     entryBox.grid(column = 1, row = currentRow)
 
@@ -91,25 +96,32 @@ def CreatePopUpReminder(timer, timer_number):
         text="set next reminder",
         command=lambda:[ set_break_message(entryBox.get(), timer_number),
             setTimer(timer, timer_number),
+            incrementNumBreakCounter(timer_number),
             root.destroy(),
-            storeData(timer_start_time, time.time())]
-        ).grid(column=3, row=currentRow)    
+            storeData(
+                int(time.time()-timer_start_time),
+                timer["timer_name"],
+                state["user_id"]
+            )
+            ]
+        ).grid(column=3, row=currentRow, pady = (SMALL_PADDING, 0))    
 
         #hey REMMEBER THE ORDER OF THE FUCNTIONS PASSED IN HERE MATTER
 
-    #quit button, means we don't schedule another pop-up
     ttk.Button(frame, 
-        text="quit program",
-        command= lambda:[
-            root.destroy(), 
-            storeData(timer_start_time, time.time())]
-        ).grid(column=4, row=currentRow)    
+        text="reset counter",
+        command= lambda: resetNumTimersSinceBreakCount(timer_number)
+        ).grid(column=4, row=currentRow, pady = (SMALL_PADDING, 0))   
 
     currentRow+= 1
 
     #potentially adds an extra message (that i think is cute or funny but uh.... might be cringe .______. ) 
     if(random.randint(0,20) == 7):
         ttk.Label(frame, text = random.choice(state["extra_messages"])).grid(column =0, row = currentRow, pady = (40, 0))
+        currentRow+= 1; 
+
+    ttk.Label(frame, text = f"# of this pop-ups since took a break: {num_popup_since_break[timer_number]}").grid(column =0, row = currentRow, pady = (20, 0))
+ 
 
     schedule_redraw_r(root, 1000000)
 
@@ -160,17 +172,22 @@ def start_selected_timers(timer_buttonState_list):
         if(timer_buttonState_pair[0].get() == 1):
             setTimer(timer_buttonState_pair[1], len(add_on_messages))
             add_on_messages.append("")
+            num_popup_since_break.append(1)
         
 #adds the timer to the scheduler queue 
 def setTimer(timer, timer_number):
     scheduler.enter(timer["timer_duration_min"] * 60, 1, CreatePopUpReminder, argument=(timer,timer_number))
 
+supabase = None 
 
 #create database connection client.
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY") 
-supabase: Client = create_client(url, key)
-
+try:
+    url: str = os.environ.get("SUPABASE_URL")
+    key: str = os.environ.get("SUPABASE_KEY") 
+    supabase = create_client(url, key)
+except Exception as e:
+    print(e) 
+    
 #initialize program state using user_settings
 settings_path = os.path.join( os.path.dirname(__file__), 'user_settings.json' )
 user_settings_file = open(settings_path,"r")
